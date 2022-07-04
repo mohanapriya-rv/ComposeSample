@@ -1,16 +1,21 @@
 package com.mpcoding.composesample
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.MaterialTheme
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Button
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -22,27 +27,78 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             // A surface container using the 'background' color from the theme
-            MaterialTheme {
-                Surface(
-                    color = Color.Black
-                ) {
-                    Greeting("Android")
-                }
+            SampleComposeFunction()
+        }
+    }
+}
+
+@Composable
+fun SampleComposeFunction() {
+    var shouldShowOnboarding by remember { mutableStateOf(true) }
+
+    if (shouldShowOnboarding) {
+        Greetings()
+    } else {
+        OnBoardingScreen(onContinueClicked = { shouldShowOnboarding = false })
+    }
+}
+
+@Composable
+private fun Greetings(names: List<String> = List(1000) { "$it" }) {
+    LazyColumn(modifier = Modifier.padding(vertical = 4.dp)) {
+        items(items = names) { name ->
+            Greeting(name = name)
+        }
+    }
+}
+
+
+@Composable
+fun Greeting(name: String) {
+    val expanded = remember { mutableStateOf(false) }
+    val extraPadding = if (expanded.value) 48.dp else 0.dp
+    val context = LocalContext.current
+    Surface(color = Color.Cyan) {
+        Row(
+            modifier = Modifier
+                .padding(24.dp)
+                .fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(bottom = extraPadding)) {
+                Text(
+                    text = "Hello $name!", color = Purple200,
+                    modifier = Modifier
+                        .padding(24.dp),
+                    fontFamily = FontFamily.Serif
+                )
+            }
+            OutlinedButton(onClick = {
+                context.startActivity(Intent(context, OnBoardingActivity::class.java))
+                expanded.value = !expanded.value
+            }) {
+                Text(
+                    if (expanded.value) "show less" else "show more",
+                    modifier = Modifier.padding(10.dp)
+                )
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String) {
-    Surface(color = Color.Cyan) {
-        Text(
-            text = "Hello $name!", color = Purple200,
-            modifier = Modifier
-                .padding(24.dp)
-                .fillMaxWidth(100f),
-            fontFamily = FontFamily.Serif
-        )
+fun OnBoardingScreen(onContinueClicked: () -> Unit) {
+    Surface {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Welcome")
+            Button(modifier = Modifier.padding(vertical = 20.dp), onClick = { onContinueClicked }) {
+                Text(text = "Continue")
+            }
+        }
+
     }
 }
 
@@ -50,6 +106,6 @@ fun Greeting(name: String) {
 @Composable
 fun DefaultPreview() {
     ComposeSampleTheme {
-        Greeting("Android")
+        SampleComposeFunction()
     }
 }
